@@ -1,0 +1,154 @@
+conky.config = {
+-- Use Xft?
+	use_xft = true,
+--font = 'snap-12',
+	font = 'Freesans:pixelsize=12',
+	xftalpha = 0.9,
+	text_buffer_size = 2048,
+
+-- Update interval in seconds
+	update_interval = 2,
+
+-- This is the number of times Conky will update before quitting.
+-- Set to zero to run forever.
+	total_run_times = 0,
+
+-- Create own window instead of using desktop (required in nautilus)
+	own_window = true,
+	own_window_type = desktop,
+	own_window_hints = 'undecorated,sticky,skip_taskbar,skip_pager',
+--own_window_hints undecorated,below,sticky,skip_taskbar,skip_pager,
+	own_window_argb_visual = true,
+	own_window_argb_value = 120,
+
+-- Use double buffering (reduces flicker, may not work for everyone)
+	double_buffer = true,
+
+-- Minimum size of text area
+	minimum_width = 185,
+	maximum_width = 200,
+
+-- Draw shades?
+	draw_shades = false,
+
+-- Draw outlines?
+	draw_outline = false,
+
+-- Draw borders around text
+	draw_borders = false,
+	draw_graph_borders = true,
+
+-- Stippled borders?
+	stippled_borders = 0,
+
+-- border margins
+--	border_margin = '5',
+	border_inner_margin = 10,
+
+-- border width
+	border_width = 1,
+
+-- Default colors and also border colors
+	default_color = '#e0e0e0',
+	default_shade_color = white,
+	default_outline_color = black,
+
+-- Text alignment, other possible values are commented
+	alignment = 'top_right',
+
+-- Gap between borders of screen and text
+-- same thing as passing -x at command line
+	gap_x = 45,
+	gap_y = 65,
+
+-- Subtract file system buffers from used memory?
+	no_buffers = true,
+
+-- set to yes if you want all text to be in uppercase
+	uppercase = false,
+
+-- number of cpu samples to average
+-- set to 1 to disable averaging
+	cpu_avg_samples = 2,
+
+-- number of net samples to average
+-- set to 1 to disable averaging
+	net_avg_samples = 3,
+
+-- Force UTF8? note that UTF8 support required XFT
+	override_utf8_locale = true,
+
+-- Add spaces to keep things from moving about?  This only affects certain objects.
+	use_spacer = 'none',
+
+};
+
+conky.text = [[
+
+#${alignc 18}${font Freesans:pixelsize=23:bold}${time %H:%M}${font}
+${alignc}${font Freesans:pixelsize=23:bold}${time %H:%M}${font}
+${alignc}${font Freesans:pixelsize=18}${time %a %d %b %Y}${font}
+
+DATE ${hr 1}
+#${font monospace:pizelsize=8}${execpi 60 cal_var=`date +%_d`; cal | sed s/"\(^\|[^0-9]\)$cal_var"'\b'/'\1${color orange}'"$cal_var"'$color'/}
+${font monospace:size=10}${execpi 99999 cal_var=`date +%_d`; cal | sed s/"\(^\|[^0-9]\)$cal_var"'\b'/'\1${color orange}'"$cal_var"'$color'/|sed 's/^/${alignc}/'}${font}
+SYS ${hr 1}
+#${alignc}${exec whoami}
+
+Uptime ${alignr}${uptime}
+Kernel ${alignr}${kernel}
+Users  ${alignr} ${user_number}
+#Sytem Temp ${alignr}${acpitemp}°C
+#CPU1 ${freq_dyn_g 1} GHz ${alignr}${cpu cpu1}%  ${cpubar cpu1 4,60}
+CPU1 GHz ${alignr}${cpu cpu1}%  ${color AEA79F}${cpubar cpu1 4,60}${color DAD7D3}
+CPU2 GHz ${alignr}${cpu cpu2}%  ${color AEA79F}${cpubar cpu2 4,60}${color DAD7D3}
+#CPU3 GHz ${alignr}${cpu cpu3}%  ${cpubar cpu3 4,60}
+#CPU4 GHz ${alignr}${cpu cpu4}%  ${cpubar cpu4 4,60}
+RAM ${alignr}$memperc%  ${color AEA79F}${membar 4,60}${color DAD7D3}
+SWAP (${swapmax})${alignr}$swapperc%  ${color AEA79F}${swapbar 4,60}${color DAD7D3}
+#${if_existing /proc/acpi/battery/BAT1/state capacity}Battery ${alignr}${battery_percent BAT1}%  ${battery_bar 4,60 BAT1}${else}${voffset -12}${endif}
+
+HDD ${hr 1}
+
+File System ${alignr}${fs_used_perc /}%  ${color AEA79F}${fs_bar 4,60 /}${color DAD7D3}
+/home ${alignr}${fs_used_perc /home}%  ${color AEA79F}${fs_bar 4,60 /home}${color DAD7D3}
+Disk Usage ${alignr}${diskio}
+
+TEMP ${hr 1}
+
+#MB ${alignr}${execi 300 sensors | grep temp1 | cut -c15-16 ;}°C
+MB ${alignr}${execi 10 sensors | pcregrep -M "k10temp-pci-00c3\nAdapter: PCI adapter\ntemp1" | grep temp1 | cut -c16-23 ;}
+CPU1 ${alignr}${execi 10 sensors | pcregrep -M "ALARM\ntemp1" | grep temp1 | cut -c16-23 ;}
+CPU2 ${alignr}${execi 10 sensors | grep temp2 | cut -c16-23 ;}
+CPU3 ${alignr}${execi 10 sensors | grep temp3 | cut -c16-23 ;}
+#CPU1 ${alignr}${execi 300 sensors | grep Core\ 0 | cut -c15-16 ;}°C
+#CPU2 ${alignr}${execi 300 sensors | grep Core\ 1 | cut -c15-16 ;}°C
+#CPU3 ${alignr}${execi 300 sensors | grep Core\ 2 | cut -c15-16 ;}°C
+#CPU4 ${alignr}${execi 300 sensors | grep Core\ 3 | cut -c15-16 ;}°C
+#HD ${alignr}${execi 300 nc localhost 7634 | cut -c33-34 ;}°C
+#Temp ${alignr}${acpitemp}°C
+
+NET ${hr 1}
+${if_existing /sys/class/net/wlp3s6}
+#Public Ip ${alignr}${execi 1 ~/.scripts/ip.sh}
+Signal ${alignr}${wireless_link_qual wlp3s6}% ${color AEA79F}${wireless_link_bar 4,60 wlp3s6}${color DAD7D3}
+#Up     ${upspeed wlp3s6} kb/s ${alignr}${upspeedgraph wlp3s6 16,60 000000 000000}
+#Down   ${downspeed wlp3s6} kb/s ${alignr}${downspeedgraph wlp3s6 16,60 000000 000000}
+${goto 45}Up ${goto 130}Down
+${goto 25}${upspeed wlp3s6} ${goto 110}${downspeed wlp3s6}
+${goto 25}${color AEA79F}${upspeedgraph wlp3s6 20,80 000000 000000} ${goto 110}${downspeedgraph wlp3s6 20,80 000000 000000}${color DAD7D3}
+SSH connections ${alignr} ${tcp_portmon 22 22 count}
+Local IP ${alignr}${addr wlp3s6}
+${if_match ${tcp_portmon 22 22 count} > 0}
+Connected IP: ${tcp_portmon 22 22 rip 0}
+${endif}
+${else}${if_existing /proc/net/route eth0}
+Up     ${upspeed eth0} kb/s ${alignr}${color AEA79F}${upspeedgraph eth0 4,60 000000 000000}${color DAD7D3}
+Down   ${downspeed eth0} kb/s ${alignr}${color AEA79F}${downspeedgraph eth0 4,60 000000 000000}${color DAD7D3}
+Local IP ${alignr}${addr eth0}
+#Public Ip ${alignr}${execi 1 ~/.scripts/ip.sh}
+${endif}
+#${else}
+#Network Unavailable
+${endif}
+]];
