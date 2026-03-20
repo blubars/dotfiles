@@ -4,14 +4,6 @@ require('snippy_config')
 require('neotest_config')
 require('llm')
 
-require('copilot').setup({
-  suggestion = { enabled = false },
-  panel = { enabled = false },
-  -- TODO: make this runtime
-  copilot_node_command = vim.fn.expand("$HOME") .. "/.asdf/installs/nodejs/20.19.0/bin/node"
-})
-require("copilot_cmp").setup()
-
 -- require('nvim-treesitter.configs').setup {
 --   -- Automatically install missing parsers when entering buffer
 --   -- Recommendation: set to false if you don't have `tree-sitter` CLI installed locally

@@ -73,7 +73,6 @@ end
 -- Some sources are too slow on large files and are only enabled
 -- depending on the file size.
 local default_cmp_sources = cmp.config.sources({
-  { name = 'copilot' },
   { name = 'nvim_lsp' },
   { name = 'snippy' },
 }, {
@@ -160,7 +159,6 @@ cmp.setup({
     priority_weight = 2,
     comparators = {
       cmp.config.compare.exact,
-      require('copilot_cmp.comparators').prioritize,
       cmp.config.compare.offset,
       cmp.config.compare.recently_used,
       cmp.config.compare.length,
