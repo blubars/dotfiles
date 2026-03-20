@@ -1,4 +1,4 @@
-" Brian Lubars neovim config: 2024
+" Brian Lubars neovim config
 "+-----------------------------------------------
 "|  PLUGINS
 "+-----------------------------------------------
@@ -6,23 +6,21 @@
 " * PLUG: :PlugInstall, :PlugUpdate, :PlugClean, :PlugStatus, :PlugUpgrade
 " * NERDCOMMENTER: <leader>cc/cu = single line; multiple, add number
 call plug#begin('~/.local/share/nvim/plugged')
-"Plug 'github/copilot.vim'
 Plug 'tpope/vim-surround'
-Plug 'zbirenbaum/copilot.lua'
-Plug 'zbirenbaum/copilot-cmp'
 Plug 'nvim-lua/plenary.nvim'  " Lua functions required for typescript-tools
 Plug 'antoinemadec/FixCursorHold.nvim'  " required for neotest
 Plug 'nvim-neotest/neotest'
 Plug 'nvim-neotest/neotest-python'
+Plug 'nvim-neotest/nvim-nio'  " Required for neotest-python
 Plug 'pmizio/typescript-tools.nvim'  " TS LSP
-Plug 'nvim-treesitter/nvim-treesitter'
+" Plug 'nvim-treesitter/nvim-treesitter'
+" Gives a floating line at the top showing the function/class
+" Plug 'nvim-treesitter/nvim-treesitter-context'
 Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.3' }
 Plug 'BurntSushi/ripgrep'
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-" Gives a floating line at the top showing the function/class
-Plug 'nvim-treesitter/nvim-treesitter-context'
 "Plug 'mhartington/formatter.nvim'  " Lua formatter: defines Format, FormatWrite
 Plug 'cohama/lexima.vim'
 Plug 'scrooloose/nerdcommenter'
@@ -45,7 +43,6 @@ Plug 'sickill/vim-monokai'
 Plug 'saltstack/salt-vim'  " syntax highlighting for *.sls
 Plug 'Glench/Vim-Jinja2-Syntax'  " syntax highlighting for *.jinja[2]
 Plug 'neovim/nvim-lspconfig'
-"Plug 'ellisonleao/glow.nvim' " markdown preview
 Plug 'hrsh7th/nvim-cmp'  " autocompletion
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
@@ -61,7 +58,7 @@ call plug#end()
 "|  Global options
 "+-----------------------------------------------
 set noswapfile
-set background=dark
+set background=light
 set mouse=a     " mouse scrolling & selecting
 set backspace=indent,eol,start
 " See: https://stackoverflow.com/questions/234564/tab-key-4-spaces-and-auto-indent-after-curly-braces-in-vim/234578#234578
@@ -72,7 +69,8 @@ set softtabstop=4
 set expandtab
 set modeline
 set list  " show whitespace as characters (excl space). See listchars
-set tw=84  " auto-wrap. use "gq" to reformat (or "gw<movement>")
+"set tw=84  " auto-wrap. use "gq" to reformat (or "gw<movement>")
+set tw=120  " auto-wrap. use "gq" to reformat (or "gw<movement>")
 
 " default: tcqj
 " t = auto-wrap text using tw
@@ -92,6 +90,7 @@ autocmd FileType gitcommit setlocal spell
 "+-----------------------------------------------
 " NVIM TERMINAL USAGE: :terminal, :vnew term://bash, new term://bash; i=start typing
 "   ctrl-N to leave insert, exit to close
+"let &shell='/usr/bin/bash --login'  "need --login to source .bash_profile
 let &shell='/bin/zsh'
 "autocmd TermOpen term://* startinsert   "start in insert mode
 "autocmd TermEnter startinsert   "start in insert mode
@@ -117,10 +116,12 @@ nnoremap <c-l> <c-w>l
 " We would like things like python and node to use the local project config,
 " rather than global settings.
 " The easiest way to do this is to assume a fixed directory structure.
+" Use python virtualenv:
 let g:python3_host_prog='/Users/brianlubars/.pyenv/versions/3.8.10/envs/venv-nvim/bin/python3'
 let g:python_host_prog='/Users/brianlubars/.pyenv/versions/3.8.10/envs/venv-nvim/bin/python'
-let g:node_host_prog='/Users/brianlubars/.asdf/installs/nodejs/19.8.1/bin/neovim-node-host'
-let g:copilot_node_command='/Users/brianlubars/.asdf/installs/nodejs/19.8.1/bin/node'
+"let g:node_host_prog='/Users/brianlubars/.asdf/installs/nodejs/25.2.1'
+
+
 
 "+-----------------------------------------------
 "|   LSP
@@ -149,6 +150,24 @@ let g:neoterm_keep_term_open=0
 "let g:airline#extensions#ale#enabled=1
 " VIMFUGITIVE:
 autocmd BufReadPost fugitive://* set bufhidden=delete
+
+"augroup black_on_save
+  "autocmd!
+  "autocmd BufWritePre *.py Black
+"augroup end
+
+" run formatters: neoformat prettier, black on save
+" Hard-code the node_modules path to prettier. Not portable, but works for now.
+"let s:formatprg = findfile('node_modules/.bin/prettier')
+"let &formatprg = s:formatprg . ' --stdin'
+"let g:neoformat_try_formatprg = 1
+"let g:neoformat_try_node_exe = 1
+
+"autocmd BufWritePre *.js Neoformat
+"autocmd BufWritePre *.ts Neoformat
+"autocmd BufWritePre *.tsx Neoformat
+"autocmd BufWritePre *.py execute ':Black'
+"autocmd BufWritePre *.tsx,*.ts,*.jsx,*.js EslintFixAll
 
 " Telescope (file/buffer fuzzy-finder)
 " ignore the node_modules folder in telescope, which is _huge_
@@ -181,9 +200,9 @@ EOF
 " If a command looks like "nosetests ...", transform it to
 " "make singletest PYTESTARGS='...'"
 function! HonorTransform(cmd) abort
-    if a:cmd =~ '^\(poetry\|pipenv\) run pytest'
+    if a:cmd =~ '^\(poetry\|pipenv\|uv\) run pytest'
         " command if not using docker
-        let l:cmd_sans_pytest = "-s ".substitute(a:cmd, '^\(poetry\|pipenv\) run pytest ', '', '')
+        let l:cmd_sans_pytest = "-s ".substitute(a:cmd, '^\(poetry\|pipenv\|uv\) run pytest ', '', '')
         let l:new_cmd = 'make singletest PARALLELISM=1 PYTESTARGS='.shellescape(l:cmd_sans_pytest)
         " command using docker
         " let l:cmd_sans_pytest = "".substitute(a:cmd, '^pipenv run pytest ', '', '')
@@ -199,11 +218,24 @@ endfunction
 " nmap <silent> <leader>ts :TestSuite<CR>
 " nmap <silent> <leader>tl :TestLast<CR>
 
+" generate a new react component and open the file in a new split
+"function! NewReactComponentSplit(component_name)
+  "let l:cmd = 'silent !yarn generate react '.expand('%:h').' '.a:component_name
+  "execute l:cmd
+  "execute 'split '.expand('%:h').'/'.a:component_name
+"endfunction
+"command! -nargs=1 NewReactComponent call NewReactComponentSplit(<f-args>)
+
+set grepprg=rg\ --vimgrep\ -i\ -T\ json\ -g\ '!tags'\ -g\ '!*/{.mypy_cache,.direnv,node_modules,.pytest_cache}/*'
+
 " Custom grep commands. Borrowed from https://chase-seibert.github.io/blog/2013/09/21/vim-grep-under-cursor.html
 " Opens search results in a window with links and highlights the matches
+command! -nargs=+ Grep execute 'grep! <args> -g ''!*test.*''' | copen | /<args>\c
+command! -nargs=+ Grep execute 'grep! <args>' | copen | /<args>\c
+
 " -I: ignore binary files; -n: line number; -e: pattern to match in search
-command! -nargs=+ Grep execute 'silent grep! -I -r -n --exclude "*.{json,pyc}" --exclude "*.test.*" --exclude "*_test.*" --exclude tags --exclude-dir ".mypy_cache" --exclude-dir ".direnv" --exclude-dir "*/node_modules/*" --exclude-dir "thrift" --exclude-dir ".pytest_cache" . -e <args>' | copen | execute 'silent /<args>'
-command! -nargs=+ GrepAll execute 'silent grep! -I -r -n --exclude "*.{json,pyc,}" --exclude tags --exclude-dir ".mypy_cache" --exclude-dir ".direnv" --exclude-dir "*/node_modules/*" --exclude-dir "thrift" --exclude-dir ".pytest_cache" . -e <args>' | copen | execute 'silent /<args>'
+"command! -nargs=+ Grep execute 'silent grep! -I -r -n --exclude "*.{json,pyc}" --exclude "*.test.*" --exclude "*_test.*" --exclude tags --exclude-dir ".mypy_cache" --exclude-dir ".direnv" --exclude-dir "*/node_modules/*" --exclude-dir "thrift" --exclude-dir ".pytest_cache" . -e <args>' | copen | execute 'silent /<args>'
+"command! -nargs=+ GrepAll execute 'silent grep! -I -r -n --exclude "*.{json,pyc,}" --exclude tags --exclude-dir ".mypy_cache" --exclude-dir ".direnv" --exclude-dir "*/node_modules/*" --exclude-dir "thrift" --exclude-dir ".pytest_cache" . -e <args>' | copen | execute 'silent /<args>'
 " shift-control-* Greps for the word under the cursor
 :nmap <leader>g :Grep <c-r>=expand("<cword>")<cr><cr>
 
@@ -292,8 +324,8 @@ gruvbox.setup({
   palette_overrides = {},
   overrides = {
     Whitespace = { fg = "#fbf1c7", bg = "#fb4934" },
-    CursorLine = { bg = "#3c3836" },
-    Function = { fg = "#8ec07c", bold = true},
+    -- CursorLine = { bg = "#3c3836" },
+    -- Function = { fg = "#8ec07c", bold = true},
     NormalFloat = { fg = "#ebdbb2", bg = "#32302f", },
   },
   transparent_mode = false,
