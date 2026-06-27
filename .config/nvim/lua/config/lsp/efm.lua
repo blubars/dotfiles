@@ -2,12 +2,12 @@ local M = {}
 
 -- I use EFM for formatting.
 function M.setup()
-  local lsp_format = require("lsp-format")
+  local lsp_format = require("lsp-format").setup()
 
   -- When doing `:wq`, vim may quit before the format runs, since lsp-format runs
   -- asynchronously. Run it sync instead in that case.
-  vim.cmd([[cabbrev wq execute "Format sync" <bar> wq]])
-  vim.cmd([[cabbrev wqa execute "Format sync" <bar> wqa]])
+--  vim.cmd([[cabbrev wq execute "Format sync" <bar> wq]])
+--  vim.cmd([[cabbrev wqa execute "Format sync" <bar> wqa]])
 
   local eslint = {
     lintCommand = "eslint --stdin --stdin-filename ${INPUT}",
